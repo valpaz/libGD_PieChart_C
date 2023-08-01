@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
     tableauCouleur[4]=couleur6;
     tableauCouleur[5]=couleur7;
 
-
+    // Add pie slice, texte (and the small line pointing to it) and the outline of the pie
     float tmp;
     float radAngle;
     float radAngleMid;
@@ -148,9 +148,10 @@ int main(int argc, char *argv[])
 
 
     }
+
+    // add separating lines between each pie slice
     startX2=550;
     startY2=400;
-
     for (int i=0; i<argc-1; i++)
     {
         DegreSumAngle=tableauSumPour360[i];
@@ -163,7 +164,7 @@ int main(int argc, char *argv[])
 
     //tempImage = gdImageCreateTrueColor(800, 800);
     //gdImageCopyResampled(tempImage, image, 0, 0, 0, 0, 800, 800, 1600, 1600);
-    camembertPNG = fopen("test.png", "wb");
+    camembertPNG = fopen("demo.png", "wb");
 
     gdImagePng(image, camembertPNG);
 
