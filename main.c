@@ -48,19 +48,19 @@ int main(int argc, char *argv[])
     gdImagePtr image;
     gdImagePtr tempImage;
     FILE *camembertPNG;
-    image = gdImageCreateTrueColor(800, 800);
+    image = gdImageCreateTrueColor(800*2, 800*2);
     int background_color = gdImageColorAllocate(image, 255, 255, 255);
     gdImageFill(image, 0, 0, background_color);
     gdImageSetAntiAliased(image, gdAntiAliased);
 
     // Parametres du texte
-    gdImageSetThickness(image, 4);
+    gdImageSetThickness(image, 6);
     gdFontPtr font = gdFontGetLarge();
-    int font_size = 18;
+    int font_size = 24;
     char *font_path = "/usr/share/fonts/truetype/liberation2/LiberationMono-BoldItalic.ttf";
 
     // Couleurs
-    char *tableauCouleur[6];
+    char *tableauCouleur[9];
     int couleur1 = gdImageColorAllocate(image, 255, 255, 255);
     int couleur2 = gdImageColorAllocate(image, 2, 245, 220);
     int couleur3 = gdImageColorAllocate(image, 135, 206, 235);
@@ -68,13 +68,17 @@ int main(int argc, char *argv[])
     int couleur5 = gdImageColorAllocate(image, 220, 220, 220);
     int couleur6 = gdImageColorAllocate(image, 40, 78, 145);
     int couleur7 = gdImageColorAllocate(image, 135, 210, 74);
+    int couleur8 = gdImageColorAllocate(image, 30, 30, 120);
+    int couleur9 = gdImageColorAllocate(image, 120, 30, 120);
     int couleurline1 =gdImageColorAllocate(image, 0, 0, 0);
-    tableauCouleur[0]=couleur2;
-    tableauCouleur[1]=couleur3;
-    tableauCouleur[2]=couleur4;
-    tableauCouleur[3]=couleur5;
-    tableauCouleur[4]=couleur6;
-    tableauCouleur[5]=couleur7;
+    tableauCouleur[0]=couleur1;
+    tableauCouleur[1]=couleur2;
+    tableauCouleur[2]=couleur3;
+    tableauCouleur[3]=couleur4;
+    tableauCouleur[4]=couleur5;
+    tableauCouleur[5]=couleur6;
+    tableauCouleur[6]=couleur7;
+    tableauCouleur[7]=couleur8;
 
     // Add pie slice, texte (and the small line pointing to it) and the outline of the pie
     float tmp;
@@ -83,15 +87,15 @@ int main(int argc, char *argv[])
     float DegreSumAngle;
     float DegreAngle;
 
-    float centrex1=400;
-    float centrey1=400;
+    float centrex1=400*2;
+    float centrey1=400*2;
 
-    float startX2=550;
-    float newstartX2=550;
+    float startX2=550*2;
+    float newstartX2=550*2;
     float tmpnewstartX2;
 
-    float startY2=400;
-    float newstartY2=400;
+    float startY2=400*2;
+    float newstartY2=400*2;
     float tmpnewstartY2;
 
     float newX2;
@@ -124,19 +128,19 @@ int main(int argc, char *argv[])
         newstartY2 = newY2+centrey1;
 
         gdImageLine(image,centrex1+0.1*(tmpnewstartX2+centrex1-centrex1) ,centrey1+0.1*(tmpnewstartY2+centrey1-centrey1) ,centrex1+tmpnewstartX2+0.1*(tmpnewstartX2+centrex1-centrex1) ,centrey1+tmpnewstartY2+0.1*(tmpnewstartY2+centrey1-centrey1) , couleurline1);//Origine
-        gdImageFilledArc(image, 400, 400, 300, 300,tmp+1,tableauSumPour360[i], tableauCouleur[i],NULL); // tmp +1 car sinon petit décalage sur le pie chart
-        gdImageArc(image, 400, 400, 300, 300,tmp,tableauSumPour360[i], couleurline1);
+        gdImageFilledArc(image, 400*2, 400*2, 300*2, 300*2,tmp+1,tableauSumPour360[i]+1, tableauCouleur[i],NULL); // tmp +1 car sinon petit décalage sur le pie chart
+        gdImageArc(image, 400*2, 400*2, 300*2, 300*2,tmp,tableauSumPour360[i], couleurline1);
 
         if (DegreSumAngle<=90){
             decalageText1=0;
             decalageText2=0;
         }
         else if(DegreSumAngle>=90.0 && DegreSumAngle<=180.0){
-            decalageText1=strlen(tableauPays[i])*14;
+            decalageText1=strlen(tableauPays[i])*18;
             decalageText2=10;
         }
         else if(DegreSumAngle>=180.0 && DegreSumAngle<=270.0){
-            decalageText1=strlen(tableauPays[i])*14;
+            decalageText1=strlen(tableauPays[i])*18;
             decalageText2=0;
         }
         else {
@@ -150,8 +154,8 @@ int main(int argc, char *argv[])
     }
 
     // add separating lines between each pie slice
-    startX2=550;
-    startY2=400;
+    startX2=550*2;
+    startY2=400*2;
     for (int i=0; i<argc-1; i++)
     {
         DegreSumAngle=tableauSumPour360[i];
@@ -171,5 +175,9 @@ int main(int argc, char *argv[])
     fclose(camembertPNG);
 
     gdImageDestroy(image);
+
+    free(tableauNombre);
+    free(tableauPour360);
+    free(tableauSumPour360);
     return 0;
 }
