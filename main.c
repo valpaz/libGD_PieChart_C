@@ -19,23 +19,23 @@ int main(int argc, char *argv[])
 
     for (int i=1; i<argc; i++) {
 
-        // le nom des pays
+        // Strings Name
         char *outputArguments = strtok(argv[i], "=");
         stringTable[i-1]=(char*)malloc((strlen(outputArguments) + 1));
         strcpy(stringTable[i-1], outputArguments);
 
-        // Le chiffre des pays
+        // Numbers name
         outputArguments = strtok(NULL, "=");
         outputArgumentsnombres=atof(outputArguments);
         nbTable[i-1]=outputArgumentsnombres;
     }
 
-    // Calcul somme des nombres
+    // Number sum calculation
     float sum;
     for (int i=0; i<argc-1; i++){
         sum+=nbTable[i];
     }
-    // Calcul somme des nombres sur 360 degres
+    // Number sum calculation fro 360°
     float sumPour360=0.0;
     for (int i=0; i<argc-1; i++) {
         sumPour360+=nbTable[i]*360/sum;
@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 
     }
 
-    // Initialisation de l'image
+    // Image initialization
     gdImagePtr image;
     gdImagePtr tempImage;
     FILE *piePNG;
@@ -53,13 +53,13 @@ int main(int argc, char *argv[])
     gdImageFill(image, 0, 0, background_color);
     gdImageSetAntiAliased(image, gdAntiAliased);
 
-    // Parametres du texte
+    // Text Parameters
     gdImageSetThickness(image, 6);
     gdFontPtr font = gdFontGetLarge();
     int font_size = 24;
     char *font_path = "/usr/share/fonts/truetype/liberation2/LiberationMono-BoldItalic.ttf";
 
-    // colors
+    // Colors
     char *colorTable[9];
     int color1 = gdImageColorAllocate(image, 255, 255, 255);
     int color2 = gdImageColorAllocate(image, 2, 245, 220);
@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
 
     }
 
-    // add separating lines between each pie slice
+    // Add separating lines between each pie slice
     startX2=550*2;
     startY2=400*2;
     for (int i=0; i<argc-1; i++)
@@ -166,8 +166,6 @@ int main(int argc, char *argv[])
     }
 
 
-    //tempImage = gdImageCreateTrueColor(800, 800);
-    //gdImageCopyResampled(tempImage, image, 0, 0, 0, 0, 800, 800, 1600, 1600);
     piePNG = fopen("demo.png", "wb");
 
     gdImagePng(image, piePNG);
