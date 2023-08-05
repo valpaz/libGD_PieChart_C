@@ -15,5 +15,5 @@ Here are exemples :<br>
 `./prog -b USA=40 France=30 China=22 Spain=20`<br>
 `./prog -d USA=40 France=30 China=22 Spain=20`<br>
 
-You can find demos [here](https://github.com/valpaz/libGD_PieChart_C/blob/main/image_repository/) for possible output layout<br>
+You can find demos [here](https://github.com/valpaz/libGD_PieChart_C/blob/main/image_repository/) for all 3 possible layout<br>
 
