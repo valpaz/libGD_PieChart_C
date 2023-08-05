@@ -5,63 +5,91 @@
 #include <math.h>
 
 
-void textGap (float *textGap1,float *textGap2, float DegreSumAngle,char * stringTable){
+void textGap (float *textGap1,float *textGap2,float *textGap3,float *textGap4, float DegreSumAngle,float DegreAngleDiv2,char * stringTable){
+    // Add additional form to print the text better (avoid overlap)
 
-    // Add additional form to the printed text (So that it does not overlap the pie or the hyphen)
-    if (DegreSumAngle<=90){
+    if (DegreSumAngle-DegreAngleDiv2<=90){ // "South-East" pie slice text as te be y slided
+        *textGap1=0;
+        *textGap2=-20;
+        int tmp = -strlen(stringTable)*24/2;  // if tmp not used, it does not  work properly
+        *textGap3=tmp;
+        *textGap4=-50;
+    }
+
+    else if(DegreSumAngle-DegreAngleDiv2<=180.0){ // "South-West" pie slice text as te be x and y slided
+        *textGap1=strlen(stringTable)*24;
+        *textGap2=-20;
+        *textGap3=(strlen(stringTable)*24)/2;
+        *textGap4=-50;
+    }
+    else if(DegreSumAngle-DegreAngleDiv2<=270.0){ // "North-West" pie slice text as te be x slided
+        *textGap1=strlen(stringTable)*24;
+        *textGap2=0;
+        *textGap3=(strlen(stringTable)*24)/2;
+        *textGap4=-30;
+    }
+    else { // "North-East" No slide needed
         *textGap1=0;
         *textGap2=0;
-    }
-    else if(DegreSumAngle>=100.0 && DegreSumAngle<=180.0){ // "west-south" pie text as te be x and y sliced a bit to not be printed on the pie
-        *textGap1=strlen(stringTable)*18;
-        *textGap2=15;
-    }
-    else if(DegreSumAngle>=180.0 && DegreSumAngle<=270.0){ // "west" pie text as te be x sliced a bit to not be printed on the pie
-        *textGap1=strlen(stringTable)*18;
-        *textGap2=0;
-    }
-    else {
-        *textGap1=0;
-        *textGap2=0;
+        int tmp = -strlen(stringTable)*24/2;// if tmp not used, it does not  work properly
+        *textGap3=tmp;
+        *textGap4=-30;
     }
 }
 int main(int argc, char *argv[])
 {
-    // Variable initialization
-    char *stringTable[argc-1];
+
+    // Parse arguments //
+    char *stringTable[argc-2]; // Names table
+    char *nbTableChar[argc-2]; // Numbers table
     float *nbTable=NULL;// table of all angle
-    float *nbTable360=NULL;// table of all angle in degre (360°)
-    float *nbTableSum360=NULL;// table of the progressive sum of all angle in degre (360°)
-    nbTable = (float *)malloc((argc-1) * sizeof(float));
-    nbTableSum360 = (float *)malloc((argc-1) * sizeof(float));
-    nbTable360 = (float *)malloc((argc-1) * sizeof(float));
+    nbTable = (float *)malloc((argc-2) * sizeof(float));
+    char *outputArguments; // Output arguments
+    float outputArgumentsnombres; // Output arguments in float
+    int outputNombresInt; // Output arguments in int
 
-    // Parse arguments
-    float outputArgumentsnombres;
-    for (int i=1; i<argc; i++) {
+    // Argument mode retrieve //
+    int modeType;
+    int mode;
+    while ((mode = getopt(argc, argv, "nbd")) != -1) {
+        if (mode=='n'){modeType=1;}
+        else if(mode=='b'){modeType=2;}
+        else if(mode=='d'){modeType=3;}}
 
-        // Strings Name arguments retrieve
-        char *outputArguments = strtok(argv[i], "=");
-        stringTable[i-1]=(char*)malloc((strlen(outputArguments) + 1));
-        strcpy(stringTable[i-1], outputArguments);
+    for (int i=2; i<argc; i++) {
 
-        // Numbers name arguements retrieve
+        // Arguments name retrieve
+        outputArguments = strtok(argv[i], "=");
+        stringTable[i-2]=(char*)malloc((strlen(outputArguments) + 1));
+        strcpy(stringTable[i-2], outputArguments);
+
+        // Arguments number retrieve
         outputArguments = strtok(NULL, "=");
         outputArgumentsnombres=atof(outputArguments);
-        nbTable[i-1]=outputArgumentsnombres;
+        outputNombresInt=atoi(outputArguments);
+        nbTable[i-2]=outputArgumentsnombres;
+
+        nbTableChar[i-2]=(char*)malloc(20*sizeof(char));
+        sprintf(nbTableChar[i-2], "%d",outputNombresInt);
     }
 
-    // Number sum calculation
-    float sum;
-    for (int i=0; i<argc-1; i++){
+    // Number sum calculation //
+    float sum=0.0;
+    for (int i=0; i<argc-2; i++){
         sum+=nbTable[i];
     }
-
-    // Number sum calculation for 360°
+    // Number sum calculation for 360° and ratios calculation //
+    float *nbTableSum360 = (float *)malloc((argc-2) * sizeof(float));// table of the progressive sum of all angle in degre (360°)
+    float *nbTable360 = (float *)malloc((argc-2) * sizeof(float));// table of all angle in degre (360°)
+    float *nbTable1000 = (float *)malloc((argc-2) * sizeof(float));// table of all argument values bring back to a 1000 ( empiric value which can be modify for more distorded pie chart)
+    float *ratio = (float *)malloc((argc-2) * sizeof(float));
     float sumPour360=0.0;
-    for (int i=0; i<argc-1; i++) {
+    for (int i=0; i<argc-2; i++) {
         sumPour360+=nbTable[i]*360/sum;
         nbTable360[i]=nbTable[i]*360/sum;
+        nbTable1000[i]=nbTable[i]*1000/sum;
+        ratio[i]=nbTable1000[i]/600;
+
         nbTableSum360[i]=sumPour360;
 
     }
@@ -69,13 +97,12 @@ int main(int argc, char *argv[])
     // Get the biggest number
     float biggestNumber=0;
     float tmpNumber;
-    for (int i=0; i<argc-1; i++) {
+    for (int i=0; i<argc-2; i++) {
         tmpNumber=nbTable360[i];
         if (tmpNumber>biggestNumber){
             biggestNumber=tmpNumber;
         }
     }
-
 
     // Image initialization
     gdImagePtr image;
@@ -87,13 +114,15 @@ int main(int argc, char *argv[])
     gdImageSetAntiAliased(image, gdAntiAliased);
 
     // Text Parameters
-    gdImageSetThickness(image, 7);
-    gdFontPtr font = gdFontGetLarge();
-    int font_size = 24;
-    char *font_path = "/usr/share/fonts/truetype/liberation2/LiberationMono-BoldItalic.ttf";
+    gdImageSetThickness(image, 8);
+    int font_size1 = 30;
+    int font_size2 = 20;
+    char *font_path1 = "/usr/share/fonts/truetype/liberation2/LiberationMono-Bold.ttf";
+    char *font_path2 = "/usr/share/fonts/truetype/liberation2/LiberationMono-BoldItalic.ttf";
+
 
     // Colors
-    char *colorTable[8];
+    int colorTable[8];
     int color1 = gdImageColorAllocate(image, 2, 245, 220);
     int color2 = gdImageColorAllocate(image, 135, 206, 235);
     int color3 = gdImageColorAllocate(image, 255, 218, 185);
@@ -102,7 +131,8 @@ int main(int argc, char *argv[])
     int color6 = gdImageColorAllocate(image, 135, 210, 74);
     int color7 = gdImageColorAllocate(image, 218, 99, 99);
     int color8 = gdImageColorAllocate(image, 120, 30, 120);
-    int color9 = gdImageColorAllocate(image, 255, 255, 255);
+    int color9 = gdImageColorAllocate(image, 120, 210, 180);
+    int color10 = gdImageColorAllocate(image, 255, 255, 255);
     int colorline1 =gdImageColorAllocate(image, 70, 70, 70);
     colorTable[0]=color1;
     colorTable[1]=color2;
@@ -115,10 +145,10 @@ int main(int argc, char *argv[])
     colorTable[8]=color9;
 
 
-
     // Add pie slice, texte (and the small line pointing to it) and the outline of the pie //
-    float angleMinus1;
 
+    // Angle variables
+    float angleMinus1;
     float DegreAngle,DegreSumAngle,radAngle,radAngleMid;
 
     // Center of the pie
@@ -140,11 +170,12 @@ int main(int argc, char *argv[])
     float newX2;
     float newY2;
 
-    float textGap1;// The more the string is big, the more the text have to be x slided
-    float textGap2;// Add a gap to balance the text width
-
+    float textGap1;// The string name has to be x slided
+    float textGap2;// Add a gap to balance the string width
+    float textGap3;// The string value has to be x slided
+    float textGap4;// Add a gap to balance the string width
     // For loop on each arguments
-    for (int i=0; i<argc-1; i++)
+    for (int i=0; i<argc-2; i++)
     {
         if (i==0){
             angleMinus1=0.0;
@@ -171,10 +202,30 @@ int main(int argc, char *argv[])
         newstartX2 = newX2+centrex1;
         newstartY2 = newY2+centrey1;
 
-        textGap(&textGap1,&textGap2,DegreSumAngle,stringTable[i]);
+        textGap(&textGap1,&textGap2,&textGap3,&textGap4,DegreSumAngle,DegreAngle,stringTable[i]);
 
+        if(modeType==3)
+        {
+            // Print the vector serving for the hyphen
+            // In this line gdImageLine is of form gdImageLine(image,x1 ,y1 ,x2 ,y2 , colorline1);
+            // For x1 = centrex1+0.27*(newHalfCutX2+centrex1-centrex1), `centrex1` is the "0" of the vector and `+0.27*(newHalfCutX2+centrex1-centrex1)` is the scalar function that slide the the vector forward so that the "0" moove foward in the same direction
+            // For x2 = centrex1+newHalfCutX2+0.27*(newHalfCutX2+centrex1-centrex1), `centrex1+newHalfCutX2` is the x value of the vector and `+0.27*(newHalfCutX2+centrex1-centrex1)` is the scalar function
+            // Same for y1 and y2
+            gdImageLine(image,centrex1+(ratio[i]+0.07)*(newHalfCutX2+centrex1-centrex1) ,centrey1+(ratio[i]+0.07)*(newHalfCutY2+centrey1-centrey1) ,centrex1+newHalfCutX2+(ratio[i]+0.07)*(newHalfCutX2+centrex1-centrex1) ,centrey1+newHalfCutY2+(ratio[i]+0.07)*(newHalfCutY2+centrey1-centrey1) , colorline1);//Origine
 
-        if (nbTable360[i]==biggestNumber)
+            // Print the filled arc using the center point and the angle i-1 and i to determine the range
+            gdImageFilledArc(image, 800, 800, 600+nbTable1000[i], 600+nbTable1000[i],angleMinus1+0.7,nbTableSum360[i]+0.5, colorTable[i],gdPie);
+
+            // Print the outline of each arc around the pie
+            gdImageArc(image, 800, 800, 600+nbTable1000[i], 600+nbTable1000[i],angleMinus1+0.5,nbTableSum360[i]+0.5, colorline1);
+
+            // Print the name around the pie
+            gdImageStringFT(image, NULL, colorline1, font_path1, font_size1, 0, (centrex1+newHalfCutX2+(ratio[i]+0.10)*(newHalfCutX2+centrex1-centrex1))-textGap1, centrey1+newHalfCutY2+(ratio[i]+0.10)*(newHalfCutY2+centrey1-centrey1)-textGap2, stringTable[i]);
+            // Print the value around the pie
+            gdImageStringFT(image, NULL, colorline1, font_path2, font_size2, 0, (centrex1+newHalfCutX2+(ratio[i]+0.10)*(newHalfCutX2+centrex1-centrex1))-textGap3, centrey1+newHalfCutY2+(ratio[i]+0.10)*(newHalfCutY2+centrey1-centrey1)-textGap4, nbTableChar[i]);
+
+        }
+        else if (nbTable360[i]==biggestNumber && modeType==2)
         {
             // Print the vector serving for the hyphen
             // In this line gdImageLine is of form gdImageLine(image,x1 ,y1 ,x2 ,y2 , colorline1);
@@ -184,13 +235,15 @@ int main(int argc, char *argv[])
             gdImageLine(image,centrex1+0.27*(newHalfCutX2+centrex1-centrex1) ,centrey1+0.27*(newHalfCutY2+centrey1-centrey1) ,centrex1+newHalfCutX2+0.27*(newHalfCutX2+centrex1-centrex1) ,centrey1+newHalfCutY2+0.27*(newHalfCutY2+centrey1-centrey1) , colorline1);//Origine
 
             // Print the filled arc using the center point and the angle i-1 and i to determine the range
-            gdImageFilledArc(image, 800, 800, 700, 700,angleMinus1+1,nbTableSum360[i], colorTable[i],NULL);
+            gdImageFilledArc(image, 800, 800, 700, 700,angleMinus1+1,nbTableSum360[i], colorTable[i],gdPie);
 
             // Print the outline of each arc around the pie
             gdImageArc(image, 800, 800, 700, 700,angleMinus1,nbTableSum360[i], colorline1);
 
-            // Print the text around the pie
-            gdImageStringFT(image, NULL, colorline1, font_path, font_size, 0, (centrex1+newHalfCutX2+0.3*(newHalfCutX2+centrex1-centrex1))-textGap1, centrey1+newHalfCutY2+0.3*(newHalfCutY2+centrey1-centrey1)+textGap2, stringTable[i]);
+            // Print the name around the pie
+            gdImageStringFT(image, NULL, colorline1, font_path1, font_size1, 0, (centrex1+newHalfCutX2+0.28*(newHalfCutX2+centrex1-centrex1))-textGap1, centrey1+newHalfCutY2+0.28*(newHalfCutY2+centrey1-centrey1)-textGap2, stringTable[i]);
+            // Print the value around the pie
+            gdImageStringFT(image, NULL, colorline1, font_path2, font_size2, 0, (centrex1+newHalfCutX2+0.28*(newHalfCutX2+centrex1-centrex1))-textGap3, centrey1+newHalfCutY2+0.28*(newHalfCutY2+centrey1-centrey1)-textGap4, nbTableChar[i]);
 
 
         }
@@ -200,36 +253,44 @@ int main(int argc, char *argv[])
             gdImageLine(image,centrex1+0.1*(newHalfCutX2+centrex1-centrex1) ,centrey1+0.1*(newHalfCutY2+centrey1-centrey1) ,centrex1+newHalfCutX2+0.1*(newHalfCutX2+centrex1-centrex1) ,centrey1+newHalfCutY2+0.1*(newHalfCutY2+centrey1-centrey1) , colorline1);//Origine
 
             // Print the arc using the center point and the angle i-1 and i to determine the range
-            gdImageFilledArc(image, 800, 800, 600, 600,angleMinus1+1,nbTableSum360[i]+0.5, colorTable[i],NULL); // angleMinus1 +1 for aligning pie slice and black line of slice
+            gdImageFilledArc(image, 800, 800, 600, 600,angleMinus1+1,nbTableSum360[i]+0.5, colorTable[i],gdPie); // angleMinus1 +1 for aligning pie slice and black line of slice
 
             // Print the outline of each arc around the pie
             gdImageArc(image, 800, 800, 600, 600,angleMinus1,nbTableSum360[i], colorline1);
 
-            // Print the text around the pie
-            gdImageStringFT(image, NULL, colorline1, font_path, font_size, 0, (centrex1+newHalfCutX2+0.15*(newHalfCutX2+centrex1-centrex1))-textGap1, centrey1+newHalfCutY2+0.15*(newHalfCutY2+centrey1-centrey1)+textGap2, stringTable[i]);
+            // Print the name around the pie
+            gdImageStringFT(image, NULL, colorline1, font_path1, font_size1, 0, (centrex1+newHalfCutX2+0.15*(newHalfCutX2+centrex1-centrex1))-textGap1, centrey1+newHalfCutY2+0.15*(newHalfCutY2+centrey1-centrey1)-textGap2, stringTable[i]);
+            // Print the value around the pie
+            gdImageStringFT(image, NULL, colorline1, font_path2, font_size2, 0, (centrex1+newHalfCutX2+0.15*(newHalfCutX2+centrex1-centrex1))-textGap3, centrey1+newHalfCutY2+0.15*(newHalfCutY2+centrey1-centrey1)-textGap4, nbTableChar[i]);
+
         }
 
     }
 
     // Add separating lines between each pie slice //
-    // New for loop is used to print over the pie
+    // This for loop is used separatly to print over the pie
     // Original position
     startX2=1100;
     startY2=800;
     // Necessary if the first number/slide of pie is the biggest
     float newX2Minus1=300;
     float newY2Minus1=0;
-    for (int i=0; i<argc-1; i++)
+    for (int i=0; i<argc-2; i++)
     {   // See above for explanation for this lines
         DegreSumAngle=nbTableSum360[i];
         radAngle=DegreSumAngle*M_PI/180;
         newX2=(startX2-centrex1)*cos(radAngle)-(startY2-centrey1)*sin(radAngle);
         newY2=(startX2-centrex1)*sin(radAngle)+(startY2-centrey1)*cos(radAngle);
-        if (nbTable360[i]==biggestNumber)
+        if(modeType==3){
+            gdImageLine(image, centrex1+ratio[i]*(newX2+centrex1-centrex1), centrey1+ratio[i]*(newY2+centrey1-centrey1),centrex1+newX2+ratio[i]*(newX2+centrex1-centrex1), centrey1+newY2+ratio[i]*(newY2+centrey1-centrey1), colorline1);//Origine
+            gdImageLine(image, centrex1+ratio[i]*(newX2Minus1+centrex1-centrex1), centrey1+ratio[i]*(newY2Minus1+centrey1-centrey1),centrex1+newX2Minus1+ratio[i]*(newX2Minus1+centrex1-centrex1), centrey1+newY2Minus1+ratio[i]*(newY2Minus1+centrey1-centrey1), colorline1);//Origine
+
+        }
+        else if (nbTable360[i]==biggestNumber && modeType==2)
         {
             // See precedent use of gdImageLine to get explanation of this lines
-            gdImageLine(image, centrex1+0.17*(newX2+centrex1-centrex1), centrey1+0.17*(newY2+centrey1-centrey1),centrex1+newX2+0.17*(newX2+centrex1-centrex1), centrey1+newY2+0.17*(newY2+centrey1-centrey1), colorline1);//Origine
-            gdImageLine(image, centrex1+0.17*(newX2Minus1+centrex1-centrex1), centrey1+0.17*(newY2Minus1+centrey1-centrey1),centrex1+newX2Minus1+0.17*(newX2Minus1+centrex1-centrex1), centrey1+newY2Minus1+0.17*(newY2Minus1+centrey1-centrey1), colorline1);//Origine
+            gdImageLine(image, centrex1+0.166*(newX2+centrex1-centrex1), centrey1+0.166*(newY2+centrey1-centrey1),centrex1+newX2+0.166*(newX2+centrex1-centrex1), centrey1+newY2+0.166*(newY2+centrey1-centrey1), colorline1);//Origine
+            gdImageLine(image, centrex1+0.166*(newX2Minus1+centrex1-centrex1), centrey1+0.166*(newY2Minus1+centrey1-centrey1),centrex1+newX2Minus1+0.166*(newX2Minus1+centrex1-centrex1), centrey1+newY2Minus1+0.166*(newY2Minus1+centrey1-centrey1), colorline1);//Origine
 
         }
         gdImageLine(image, centrex1, centrey1,centrex1+newX2, centrey1+newY2, colorline1);
@@ -252,8 +313,10 @@ int main(int argc, char *argv[])
 
     // Free space
     free(nbTable);
+    free(ratio);
     free(nbTable360);
     free(nbTableSum360);
+    free(nbTable1000);
 
     return 0;
 }
