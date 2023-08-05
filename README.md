@@ -1,12 +1,11 @@
 # libGD_PieChart_C : a C program using the GD library to draw pie chart
 
 This program is coded in C and use the library [GD](https://libgd.github.io/).<br><br>
-His purpose is to create pie chart.<br><br>
+His purpose is to create pie chart.<br>
 It has 3 layouts mode :<br>
 - -n : _The standard pie chart layout_<br>
 * -b : _The largest part of the pie is extended_<br>
 + -d : _Each part of the pie is extended depending on the value_<br>
-<br>
 The program `main.c` takes entry parameters in this form :<br>
 `-mode string=value`<br>
 <br>
