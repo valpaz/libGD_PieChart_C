@@ -5,7 +5,8 @@ His purpose is to create pie chart.<br>
 It has 3 layouts mode :<br>
 - -n : _The standard pie chart layout_<br>
 * -b : _The largest part of the pie is extended_<br>
-+ -d : _Each part of the pie is extended depending on the value_<br>
++ -d : _Each part of the pie is extended depending on the value_<br><br>
+
 The program `main.c` takes entry parameters in this form :<br>
 `-mode string=value`<br>
 <br>
